@@ -17,7 +17,7 @@
 
 #define LOG_TAG "GonkBufferQueue"
 #define ATRACE_TAG ATRACE_TAG_GRAPHICS
-#define LOG_NDEBUG 0
+//#define LOG_NDEBUG 0
 
 #define GL_GLEXT_PROTOTYPES
 #define EGL_EGLEXT_PROTOTYPES
@@ -30,11 +30,11 @@
 #include "GonkBufferQueueJB.h"
 
 // Macros for including the GonkBufferQueue name in log messages
-#define ST_LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
-#define ST_LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
-#define ST_LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
-#define ST_LOGW(...) __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__)
-#define ST_LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#define ST_LOGV ALOGV
+#define ST_LOGD ALOGD
+#define ST_LOGI ALOGI
+#define ST_LOGW ALOGW
+#define ST_LOGE ALOGE
 
 #define ATRACE_BUFFER_INDEX(index)
 
