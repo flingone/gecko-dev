@@ -11,7 +11,7 @@ this.EXPORTED_SYMBOLS = [
 const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
 
 // Set to true to see debug messages.
-let DEBUG = false;
+let DEBUG = true;
 
 /**
  * Constructor of Sntp.
@@ -33,6 +33,7 @@ let DEBUG = false;
  */
 this.Sntp = function Sntp(dataAvailableCb, maxRetryCount, refreshPeriodInSecs,
                           timeoutInSecs, pools, port) {
+  debug("Sntp pools = " + pools);
   if (dataAvailableCb != null) {
     this._dataAvailableCb = dataAvailableCb;
   }
@@ -172,9 +173,11 @@ Sntp.prototype = {
     function SNTPListener() {};
     SNTPListener.prototype = {
       onStartRequest: function onStartRequest(request, context) {
-      },
+        debug("onStartRequest");
+	},
 
       onStopRequest: function onStopRequest(request, context, status) {
+        debug("onStopRequest");
         if (!Components.isSuccessCode(status)) {
           debug ("Connection failed");
           this._requesting = false;
@@ -184,6 +187,7 @@ Sntp.prototype = {
 
       onDataAvailable: function onDataAvailable(request, context, inputStream,
                                                 offset, count) {
+        debug("onDataAvailable");
         function GetTimeStamp(binaryInputStream) {
           let s = binaryInputStream.read32();
           let f = binaryInputStream.read32();
@@ -252,7 +256,22 @@ Sntp.prototype = {
       this._updateTimer.cancel();
     }
 
-    debug ("Making request");
+    // choose which ntp server should be used. please note, we will use the first ntp service twice time.
+    let random = 0;
+    if(this._magicNum == -1) {
+        random = 0;
+        this._magicNum = 0;
+    } else {
+       random = this._magicNum;
+       if(this._magicNum < 4) {
+          this._magicNum = this._magicNum + 1;
+       } else {
+          this._magicNum = 0;
+       }
+    }
+
+    debug ("Making request[" + random + "][" + this._pools[random] + "][" + this._timeoutInMS + "]");
+
     this._requesting = true;
 
     let currentThread = Cc["@mozilla.org/thread-manager;1"]
@@ -265,7 +284,7 @@ Sntp.prototype = {
     let transport = socketTransportService
       .createTransport(["udp"],
                        1,
-                       this._pools[Math.floor(this._pools.length * Math.random())],
+                       this._pools[random],
                        this._port,
                        null);
 
@@ -287,11 +306,15 @@ Sntp.prototype = {
 
   // Sntp servers.
   _pools: [
+    "133.100.11.8", // this should be the preferred ntp server.
     "0.pool.ntp.org",
     "1.pool.ntp.org",
     "2.pool.ntp.org",
     "3.pool.ntp.org"
   ],
+
+  // ntp server magic num
+  _magicNum : -1,
 
   // The SNTP port.
   _port: 123,
