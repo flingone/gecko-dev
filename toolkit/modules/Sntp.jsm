@@ -9,6 +9,7 @@ this.EXPORTED_SYMBOLS = [
 ];
 
 const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
+ Cu.import("resource://gre/modules/Timer.jsm");
 
 // Set to true to see debug messages.
 let DEBUG = true;
@@ -299,6 +300,16 @@ Sntp.prototype = {
     pump.asyncRead(new SNTPListener(), null);
 
     outStream.asyncWait(new SNTPRequester(), 0, 0, currentThread);
+
+    //Check SNTP server status.
+    let self = this;
+    setTimeout(function() {
+      if(self._requesting) {
+        debug("sntp server no response...");
+        self._requesting = false;
+        self._retry();
+      }
+    }, 10000);
   },
 
   // Callback function.
