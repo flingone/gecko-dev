@@ -410,7 +410,7 @@ DOMWifiManager.prototype = {
   },
 
   _fireConnectionInfoUpdate: function onConnectionInfoUpdate(info) {
-    var evt = new this._window.MozWifiConnectionInfoEvent("connectioninfoupdate",
+    var evt = new this._window.MozWifiConnectionInfoEvent("connectionInfoUpdate",
                                                           { network: this._currentNetwork,
                                                             signalStrength: info.signalStrength,
                                                             relSignalStrength: info.relSignalStrength,
