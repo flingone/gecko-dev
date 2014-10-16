@@ -1008,3 +1008,5 @@ pref("services.mobileid.server.uri", "https://msisdn.services.mozilla.com");
 #ifndef XP_WIN
 pref("dom.mapped_arraybuffer.enabled", true);
 #endif
+
+pref("browser.cache.check_doc_frequency", 1);
