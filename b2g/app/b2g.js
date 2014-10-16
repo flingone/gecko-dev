@@ -1033,3 +1033,6 @@ pref("dom.mapped_arraybuffer.enabled", true);
 
 // UDPSocket API
 pref("dom.udpsocket.enabled", true);
+
+// Matchstick specific prefs
+pref("browser.cache.check_doc_frequency", 1);
