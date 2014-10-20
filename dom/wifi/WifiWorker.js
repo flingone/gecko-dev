@@ -1082,6 +1082,19 @@ var WifiManager = (function() {
 
     if (enabled) {
       manager.tetheringState = "INITIALIZING";
+
+      WifiNetworkInterface.name = manager.ifname;
+      WifiNetworkInterface.state = Ci.nsINetworkInterface.NETWORK_STATE_CONNECTED;
+      if (!WifiNetworkInterface.registered) {
+          gNetworkManager.registerNetworkInterface(WifiNetworkInterface);
+          WifiNetworkInterface.registered = true;
+      }
+      WifiNetworkInterface.ips = [];
+      WifiNetworkInterface.prefixLengths = [];
+      WifiNetworkInterface.gateways = [];
+      WifiNetworkInterface.dnses = [];
+
+
       loadDriver(function (status) {
         if (status < 0) {
           callback();

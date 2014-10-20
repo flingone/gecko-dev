@@ -379,6 +379,7 @@ NetworkManager.prototype = {
 
     Services.obs.notifyObservers(network, TOPIC_INTERFACE_REGISTERED, null);
     debug("Network '" + networkId + "' registered.");
+    this.setAndConfigureActive();
   },
 
   unregisterNetworkInterface: function(network) {
@@ -552,6 +553,7 @@ NetworkManager.prototype = {
     let defaultDataNetwork;
 #endif
     for each (let network in this.networkInterfaces) {
+      debug("Found our preferred type of network: " + network.name + " state:" + network.state);
       if (network.state != Ci.nsINetworkInterface.NETWORK_STATE_CONNECTED) {
         continue;
       }
