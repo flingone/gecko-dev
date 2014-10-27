@@ -1009,4 +1009,6 @@ pref("services.mobileid.server.uri", "https://msisdn.services.mozilla.com");
 pref("dom.mapped_arraybuffer.enabled", true);
 #endif
 
+// Added for Matchstick
 pref("browser.cache.check_doc_frequency", 1);
+pref("dom.allow_scripts_to_close_windows", true);
