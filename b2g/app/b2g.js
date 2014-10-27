@@ -1037,3 +1037,4 @@ pref("dom.udpsocket.enabled", true);
 // Matchstick specific prefs
 pref("browser.cache.check_doc_frequency", 1);
 pref("dom.allow_scripts_to_close_windows", true);
+pref("network.websocket.allowInsecureFromHTTPS", true);
