@@ -25,7 +25,7 @@ const IMAGE_FILTERS = ['image/gif', 'image/jpeg', 'image/pjpeg',
                        'image/vnd.microsoft.icon'];
 const VIDEO_FILTERS = ['video/mpeg', 'video/mp4', 'video/ogg',
                        'video/quicktime', 'video/webm', 'video/x-matroska',
-                       'video/x-ms-wmv', 'video/x-flv'];
+                       'video/x-ms-wmv', 'video/x-flv','video/mp2ts','video/avi'];
 const AUDIO_FILTERS = ['audio/basic', 'audio/L24', 'audio/mp4',
                        'audio/mpeg', 'audio/ogg', 'audio/vorbis',
                        'audio/vnd.rn-realaudio', 'audio/vnd.wave',

@@ -219,6 +219,11 @@ static const char* const gOmxTypes[] = {
   "video/webm",
   "audio/webm",
 #endif
+  "video/x-flv",
+  "video/x-f4v",
+  "video/x-msvideo",
+  "video/x-matroska",
+  "video/mp2t",
   nullptr
 };
 
