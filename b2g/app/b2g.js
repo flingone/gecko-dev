@@ -1038,3 +1038,4 @@ pref("dom.udpsocket.enabled", true);
 pref("browser.cache.check_doc_frequency", 1);
 pref("dom.allow_scripts_to_close_windows", true);
 pref("network.websocket.allowInsecureFromHTTPS", true);
+pref("security.csp.enable", false);
