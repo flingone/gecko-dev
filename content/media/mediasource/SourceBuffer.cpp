@@ -31,6 +31,11 @@ extern PRLogModuleInfo* gMediaSourceLog;
 #define MSE_DEBUG(...)
 #endif
 
+#include <utils/Log.h>
+#include <cutils/properties.h>
+#define LOG_TAG "mm-debug"
+#define ALOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+
 namespace mozilla {
 
 class MediaResource;
@@ -130,6 +135,15 @@ public:
 
   virtual bool IsInitSegmentPresent(const uint8_t* aData, uint32_t aLength)
   {
+    char prop[PROPERTY_VALUE_MAX];
+      if (property_get("media.stagefright.debug", prop, NULL)
+        && (!strcmp(prop, "1") || !strcasecmp(prop, "true"))) {
+
+        aLength = (aLength > 1024)? 1024 : aLength;
+        for (int i = 0; i < aLength; i ++) {
+          ALOGE("%d - 0x%x - %c", aData[i], aData[i], aData[i]);
+        }
+    }
     return false;
   }
 
