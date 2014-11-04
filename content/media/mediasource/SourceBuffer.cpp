@@ -172,6 +172,19 @@ public:
   }
 };
 
+class MP4ContainerParser : public ContainerParser {
+public:
+  bool IsInitSegmentPresent(const uint8_t* aData, uint32_t aLength)
+  {
+    if (aLength >= 8 &&
+        aData[4] == 'f' && aData[5] == 't' && aData[6] == 'y' && aData[7] == 'p') {
+      return true;
+    }
+    return false;
+  }
+};
+
+
 /*static*/ ContainerParser*
 ContainerParser::CreateForMIMEType(const nsACString& aType)
 {
@@ -179,6 +192,9 @@ ContainerParser::CreateForMIMEType(const nsACString& aType)
     return new WebMContainerParser();
   }
 
+  if (aType.LowerCaseEqualsLiteral("video/mp4") || aType.LowerCaseEqualsLiteral("audio/mp4")) {
+    return new MP4ContainerParser();
+  }
   // XXX: Plug in parsers for MPEG4, etc. here.
   return new ContainerParser();
 }

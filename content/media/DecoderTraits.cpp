@@ -237,13 +237,15 @@ IsOmxSupportedType(const nsACString& aType)
   return CodecListContains(gOmxTypes, aType);
 }
 
-static char const *const gH264Codecs[9] = {
+static char const *const gH264Codecs[] = {
   "avc1.42E01E",  // H.264 Constrained Baseline Profile Level 3.0
   "avc1.42001E",  // H.264 Baseline Profile Level 3.0
   "avc1.58A01E",  // H.264 Extended Profile Level 3.0
   "avc1.4D401E",  // H.264 Main Profile Level 3.0
   "avc1.64001E",  // H.264 High Profile Level 3.0
   "avc1.64001F",  // H.264 High Profile Level 3.1
+  "avc1.4D4020",
+  "avc1.4D404F",
   "mp4v.20.3",    // 3GPP
   "mp4a.40.2",    // AAC-LC
   nullptr
