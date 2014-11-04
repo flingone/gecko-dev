@@ -33,7 +33,7 @@ extern PRLogModuleInfo* gMediaSourceLog;
 
 #include <utils/Log.h>
 #include <cutils/properties.h>
-#define LOG_TAG "mm-debug"
+#define LOG_TAG "gecko-mm-debug"
 #define ALOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 namespace mozilla {
