@@ -41,6 +41,16 @@
 
 //-----------------------------------------------------------------------------
 
+#if 1 // Enable nsHttpTransaction log to logcat
+#include "nsDebug.h"
+#define LOG_TAG "nsHttpTransaction"
+#define DN_LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
+
+#define LOG3(x) DN_LOGV x
+#define LOG3_ENABLED() 1
+#define PR_LOGGING 1
+#endif
+
 #ifdef DEBUG
 // defined by the socket transport service while active
 extern PRThread *gSocketThread;
