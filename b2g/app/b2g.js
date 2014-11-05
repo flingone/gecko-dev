@@ -1015,3 +1015,4 @@ pref("dom.allow_scripts_to_close_windows", true);
 pref("network.websocket.allowInsecureFromHTTPS", true);
 pref("media.mediasource.enabled", true);
 pref("security.csp.enable", false);
+pref("dom.webcrypto.enabled", true);
