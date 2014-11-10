@@ -42,6 +42,7 @@ static const unsigned int MAX_SOURCE_BUFFERS = 16;
 namespace mozilla {
 
 static const char* const gMediaSourceTypes[] = {
+#if 0
   "video/webm",
   "audio/webm",
 // XXX: Disabled other codecs temporarily to allow WebM testing.  For now, set
@@ -60,6 +61,7 @@ static const char* const gMediaSourceTypes[] = {
   "video/x-msvideo",
   "video/x-matroska",
   "video/mp2t",
+#endif
   nullptr
 };
 
