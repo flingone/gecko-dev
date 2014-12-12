@@ -171,7 +171,7 @@ int FramebufferSurface::GetPrevFBAcquireFd() {
     if (mPrevFBAcquireFence.get() && mPrevFBAcquireFence->isValid()) {
         return mPrevFBAcquireFence->dup();
     }
-    ALOGE("GetPrevFBAcquireFd: FB acquire fence is invalid!");
+    //ALOGE("GetPrevFBAcquireFd: FB acquire fence is invalid!");
     return -1;
 }
 
