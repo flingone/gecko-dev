@@ -17,7 +17,7 @@ Cu.import("resource://gre/modules/WifiNetUtil.jsm");
 Cu.import("resource://gre/modules/WifiP2pManager.jsm");
 Cu.import("resource://gre/modules/WifiP2pWorkerObserver.jsm");
 
-var DEBUG = false; // set to true to show debug messages.
+var DEBUG = true; // set to true to show debug messages.
 
 const WIFIWORKER_CONTRACTID = "@mozilla.org/wifi/worker;1";
 const WIFIWORKER_CID        = Components.ID("{a14e8977-d259-433a-a88d-58dd44657e5b}");
@@ -221,11 +221,14 @@ var WifiManager = (function() {
   var driverLoaded = false;
 
   function loadDriver(callback) {
+    debug("loadDriver!!");
     if (driverLoaded) {
+      debug("loadDriver! already loaded!");
       callback(0);
       return;
     }
 
+    debug("loadDriver!send wifiCommand.loadDriver!!!!");
     wifiCommand.loadDriver(function (status) {
       driverLoaded = (status >= 0);
       callback(status)
@@ -233,6 +236,7 @@ var WifiManager = (function() {
   }
 
   function unloadDriver(type, callback) {
+    debug("unloadDriver!type[" + type + "]");
     if (!unloadDriverEnabled) {
       // Unloading drivers is generally unnecessary and
       // can trigger bugs in some drivers.
@@ -560,6 +564,7 @@ var WifiManager = (function() {
   var connectTries = 0;
   var retryTimer = null;
   function connectCallback(ok) {
+    debug("connectCallback![" + ok + "]");
     if (ok === 0) {
       // Tell the event worker to start waiting for events.
       retryTimer = null;
@@ -610,6 +615,7 @@ var WifiManager = (function() {
   }
 
   function onconnected() {
+    debug("onconnected!");
     // For now we do our own DHCP. In the future, this should be handed
     // off to the Network Manager.
     let currentNetwork = Object.create(null);
@@ -870,6 +876,7 @@ var WifiManager = (function() {
 
   function prepareForStartup(callback) {
     let status = libcutils.property_get(DHCP_PROP + "_" + manager.ifname);
+    debug("prepareForStartup!status[" + status + "]");
     if (status !== "running") {
       tryStopSupplicant();
       return;
@@ -883,6 +890,7 @@ var WifiManager = (function() {
     // start, so we hand-roll it here.
     function tryStopSupplicant () {
       let status = libcutils.property_get(SUPP_PROP);
+      debug("tryStopSupplicant:status[" + status +"]");
       if (status !== "running") {
         callback();
         return;
@@ -951,7 +959,9 @@ var WifiManager = (function() {
 
   // Public interface of the wifi service.
   manager.setWifiEnabled = function(enabled, callback) {
+    debug("manager.setWifiEnabled!state[" + manager.state + "]enabled[" + enabled + "]");
     if (enabled === manager.isWifiEnabled(manager.state)) {
+      debug("manager.setWifiEnabled!no change!");
       callback("no change");
       return;
     }
@@ -972,7 +982,9 @@ var WifiManager = (function() {
       gNetworkManager.updateNetworkInterface(WifiNetworkInterface);
 
       prepareForStartup(function() {
+        debug("Ready to loadDriver!!");
         loadDriver(function (status) {
+          debug("loadDriver result[" + status + "]");
           if (status < 0) {
             callback(status);
             manager.state = "UNINITIALIZED";
@@ -981,12 +993,13 @@ var WifiManager = (function() {
           // This command is mandatory for Nexus 4. But some devices like
           // Galaxy S2 don't support it. Continue to start wpa_supplicant
           // even if we fail to set wifi operation mode to station.
+          debug("gNetworkService.setWifiOperationMode![" + manager.ifname + "][" + WIFI_FIRMWARE_STATION + "]");
           gNetworkService.setWifiOperationMode(manager.ifname,
                                                WIFI_FIRMWARE_STATION,
                                                function (status) {
-
             function startSupplicantInternal() {
               wifiCommand.startSupplicant(function (status) {
+                debug("wifiCommand.startSupplicant!status[" + status + "]");
                 if (status < 0) {
                   unloadDriver(WIFI_FIRMWARE_STATION, function() {
                     callback(status);
@@ -1003,6 +1016,7 @@ var WifiManager = (function() {
             }
 
             function doStartSupplicant() {
+              debug("doStartSupplicant!");
               cancelWaitForDriverReadyTimer();
 
               if (!manager.connectToSupplicant) {
@@ -1035,6 +1049,7 @@ var WifiManager = (function() {
       // supplicant gracefully, then we need to continue telling it to die
       // until it does.
       let doDisableWifi = function() {
+        debug("doDisableWifi!");
         manager.stopSupplicantCallback = (function () {
           wifiCommand.stopSupplicant(function (status) {
             wifiCommand.closeSupplicantConnection(function() {
@@ -1086,7 +1101,9 @@ var WifiManager = (function() {
 
   // Get wifi interface and load wifi driver when enable Ap mode.
   manager.setWifiApEnabled = function(enabled, configuration, callback) {
+    debug("manager.setWifiApEnabled!enabled[" + enabled + "]tetheringState[" + manager.tetheringState + "]");
     if (enabled === manager.isWifiTetheringEnabled(manager.tetheringState)) {
+      debug("manager.setWifiApEnabled!no change");
       callback("no change");
       return;
     }
@@ -1105,8 +1122,9 @@ var WifiManager = (function() {
       WifiNetworkInterface.gateways = [];
       WifiNetworkInterface.dnses = [];
 
-
+      debug("manager.setWifiApEnabled:loadDriver!");
       loadDriver(function (status) {
+        debug("loadDriver!result[" + status + "]");
         if (status < 0) {
           callback();
           manager.tetheringState = "UNINITIALIZED";
@@ -1125,15 +1143,18 @@ var WifiManager = (function() {
         }
 
         function doStartWifiTethering() {
+          debug("doStartWifiTethering![" + enabled + "]");
           cancelWaitForDriverReadyTimer();
           WifiNetworkInterface.name = libcutils.property_get("wifi.tethering.interface", manager.ifname);
           gNetworkManager.setWifiTethering(enabled, WifiNetworkInterface,
                                            configuration, function(result) {
+            debug("gNetworkManager.setWifiTethering! result[" + result + "]");
             if (result) {
               manager.tetheringState = "UNINITIALIZED";
             } else {
               manager.tetheringState = "COMPLETED";
               wifiCommand.connectToHostapd(function(result) {
+                debug("wifiCommand.connectToHostapd!result[" + result+ "]");
                 if (result) {
                   return;
                 }
@@ -1155,6 +1176,7 @@ var WifiManager = (function() {
       });
     } else {
       cancelWifiHotspotStatusTimer();
+      debug("gNetworkManager.setWifiTethering[" + enabled + "]");
       gNetworkManager.setWifiTethering(enabled, WifiNetworkInterface,
                                        configuration, function(result) {
         // Should we fire a dom event if we fail to set wifi tethering  ?
@@ -2208,6 +2230,7 @@ function WifiWorker() {
   };
 
   WifiManager.onnetworkconnected = function() {
+    debug("WifiManager.onnetworkconnected!");
     if (!this.info || !this.info.ipaddr_str) {
       debug("Network information is invalid.");
       return;
@@ -2935,6 +2958,7 @@ WifiWorker.prototype = {
    */
   ignoreWifiEnabledFromSettings: false,
   setWifiEnabled: function(msg) {
+    debug("setWifiEnabled!msg[" + msg+ "]");
     const message = "WifiManager:setWifiEnabled:Return";
     let self = this;
     let enabled = msg.data;
@@ -2954,6 +2978,7 @@ WifiWorker.prototype = {
     }
 
     WifiManager.setWifiEnabled(enabled, function(ok) {
+      debug("WifiManager.setWifiEnabled!enabled[" + enabled + "]ok[" + ok + "]");
       if (ok === 0 || ok === "no change") {
         self._sendMessage(message, true, true, msg);
 
@@ -2970,6 +2995,7 @@ WifiWorker.prototype = {
   },
 
   _setWifiEnabled: function(enabled, callback) {
+    debug("_setWifiEnabled:enabled[" + enabled + "]");
     // Reply error to pending requests.
     if (!enabled) {
       this._clearPendingRequest();
@@ -2997,6 +3023,8 @@ WifiWorker.prototype = {
       data: data,
       callback: callback
     });
+
+    debug("queueRequest!len[" + this._stateRequests.length + "]command[" + data.command + "]value[" + data.value + "]status[" + this.requestProcessing + "]");
 
     this.nextRequest();
   },
@@ -3525,11 +3553,13 @@ WifiWorker.prototype = {
                               // Released upon the request is fully executed,
                               // i.e, mostly after callback is done.
   requestDone: function requestDone() {
+    debug("requestDone!");
     this.requestProcessing = false;
     this.nextRequest();
   },
 
   nextRequest: function nextRequest() {
+    debug("nextRequest!len[" + this._stateRequests.length + "]processing[" + this.requestProcessing + "]");
     // No request to process
     if (this._stateRequests.length === 0) {
       return;
@@ -3546,10 +3576,13 @@ WifiWorker.prototype = {
     // Find next valid request
     let request = this._stateRequests.shift();
 
+    debug("request!len[" + this._stateRequests.length + "]command[" + request.data.command + "]value[" + request.data.value + "]");
+
     request.callback(request.data);
   },
 
   notifyTetheringOn: function notifyTetheringOn() {
+    debug("notifyTetheringOn!");
     // It's really sad that we don't have an API to notify the wifi
     // hotspot status. Toggle settings to let gaia know that wifi hotspot
     // is enabled.
@@ -3570,6 +3603,7 @@ WifiWorker.prototype = {
   },
 
   notifyTetheringOff: function notifyTetheringOff() {
+    debug("notifyTetheringOff!");
     // It's really sad that we don't have an API to notify the wifi
     // hotspot status. Toggle settings to let gaia know that wifi hotspot
     // is disabled.
@@ -3590,6 +3624,7 @@ WifiWorker.prototype = {
   },
 
   handleWifiEnabled: function(enabled) {
+    debug("BEGIN handleWifiEnabled![" + enabled + "]");
     if (this.ignoreWifiEnabledFromSettings) {
       return;
     }
@@ -3599,6 +3634,7 @@ WifiWorker.prototype = {
       this.queueRequest({command: "setWifiApEnabled", value: false}, function(data) {
         if (this.tetheringSettings[SETTINGS_WIFI_TETHERING_ENABLED] ||
             WifiManager.isWifiTetheringEnabled(WifiManager.tetheringState)) {
+          debug("call this.setWifiApEnabled!false!");
           this.disconnectedByWifi = true;
           this.setWifiApEnabled(false, this.notifyTetheringOff.bind(this));
         } else {
@@ -3608,12 +3644,14 @@ WifiWorker.prototype = {
     }
 
     this.queueRequest({command: "setWifiEnabled", value: enabled}, function(data) {
+      debug("call this._setWifiEnabled![" + enabled + "]");
       this._setWifiEnabled(enabled, this._setWifiEnabledCallback.bind(this));
     }.bind(this));
 
     if (!enabled) {
       this.queueRequest({command: "setWifiApEnabled", value: true}, function(data) {
         if (this.disconnectedByWifi) {
+          debug("call this.setWifiApEnabled!true");
           this.setWifiApEnabled(true, this.notifyTetheringOn.bind(this));
         } else {
           this.requestDone();
@@ -3621,14 +3659,17 @@ WifiWorker.prototype = {
         this.disconnectedByWifi = false;
       }.bind(this));
     }
+    debug("end handleWifiEnabled![" + enabled + "]");
   },
 
   handleWifiTetheringEnabled: function(enabled) {
     // Make sure Wifi is idle before switching to Wifi hotspot mode.
+    debug("handleWifiTetheringEnabled![" + enabled + "]");
     if (enabled) {
       this.queueRequest({command: "setWifiEnabled", value: false}, function(data) {
         if (WifiManager.isWifiEnabled(WifiManager.state)) {
           this.disconnectedByWifiTethering = true;
+          debug("call this._setWifiEnabled[false]");
           this._setWifiEnabled(false, this._setWifiEnabledCallback.bind(this));
         } else {
           this.requestDone();
@@ -3637,12 +3678,14 @@ WifiWorker.prototype = {
     }
 
     this.queueRequest({command: "setWifiApEnabled", value: enabled}, function(data) {
+      debug("call this.setWifiApEnabled[" + enabled + "]");
       this.setWifiApEnabled(enabled, this.requestDone.bind(this));
     }.bind(this));
 
     if (!enabled) {
       this.queueRequest({command: "setWifiEnabled", value: true}, function(data) {
         if (this.disconnectedByWifiTethering) {
+          debug("call this._setWifiEnabled[true]");
           this._setWifiEnabled(true, this._setWifiEnabledCallback.bind(this));
         } else {
           this.requestDone();
@@ -3666,6 +3709,7 @@ WifiWorker.prototype = {
         return;
       }
 
+      debug("observe:key[" + setting.key + "]value[" + setting.value + "]");
       this.handle(setting.key, setting.value);
       break;
 
@@ -3753,7 +3797,7 @@ this.NSGetFactory = XPCOMUtils.generateNSGetFactory([WifiWorker]);
 
 let debug;
 function updateDebug() {
-  if (DEBUG) {
+  if (true) {
     debug = function (s) {
       dump("-*- WifiWorker component: " + s + "\n");
     };
