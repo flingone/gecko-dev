@@ -2366,10 +2366,12 @@ function WifiWorker() {
         return;
       if (aResult === null)
         aResult = true;
+      debug("initWifiEnabledCb: handle: ready to start wifi[" + aResult + "]");
       self.handleWifiEnabled(aResult);
     },
     handleError: function handleError(aErrorMessage) {
       debug("Error reading the 'wifi.enabled' setting. Default to wifi on.");
+      debug("initWifiEnabledCb: handleError: ready to start wifi[true]");
       self.handleWifiEnabled(true);
     }
   };
@@ -2936,6 +2938,7 @@ WifiWorker.prototype = {
   },
 
   _setWifiEnabledCallback: function(status) {
+    debug("_setWifiEnabledCallback:status[" + status + "]suppStarted[" + WifiManager.supplicantStarted + "]");
     if (status !== 0) {
       this.requestDone();
       return;
@@ -3632,28 +3635,33 @@ WifiWorker.prototype = {
     // Make sure Wifi hotspot is idle before switching to Wifi mode.
     if (enabled) {
       this.queueRequest({command: "setWifiApEnabled", value: false}, function(data) {
+        debug("teghering["+this.tetheringSettings[SETTINGS_WIFI_TETHERING_ENABLED] + "]tetheringstate[" + WifiManager.tetheringState + "]");
         if (this.tetheringSettings[SETTINGS_WIFI_TETHERING_ENABLED] ||
             WifiManager.isWifiTetheringEnabled(WifiManager.tetheringState)) {
-          debug("call this.setWifiApEnabled!false!");
+          debug("handleWifiEnabled: call this.setWifiApEnabled!setWifiApEnabled-- false!");
           this.disconnectedByWifi = true;
           this.setWifiApEnabled(false, this.notifyTetheringOff.bind(this));
         } else {
+          debug("handleWifiEnabled: call this.requestDone!setWifiApEnabled --false");
           this.requestDone();
         }
       }.bind(this));
     }
 
     this.queueRequest({command: "setWifiEnabled", value: enabled}, function(data) {
-      debug("call this._setWifiEnabled![" + enabled + "]");
+      debug("handleWifiEnabled call this._setWifiEnabled![" + enabled + "]");
       this._setWifiEnabled(enabled, this._setWifiEnabledCallback.bind(this));
     }.bind(this));
 
     if (!enabled) {
       this.queueRequest({command: "setWifiApEnabled", value: true}, function(data) {
-        if (this.disconnectedByWifi) {
-          debug("call this.setWifiApEnabled!true");
+        var enableAp = this.tetheringSettings[SETTINGS_WIFI_TETHERING_ENABLED] && !WifiManager.isWifiTetheringEnabled(WifiManager.tetheringState); // forece to enter ap mode?
+        debug("handleWifiEnabled:setWifiApEnabled-true[" + this.tetheringSettings[SETTINGS_WIFI_TETHERING_ENABLED] + "][" + WifiManager.isWifiTetheringEnabled(WifiManager.tetheringState) + "]enableAp[" + enableAp + "]");
+        if (this.disconnectedByWifi||enableAp) {
+          debug("handleWifiEnabled: call this.setWifiApEnabled!true");
           this.setWifiApEnabled(true, this.notifyTetheringOn.bind(this));
         } else {
+          debug("handleWifiEnabled: this.requestDone!   setWifiApEnabled----true");
           this.requestDone();
         }
         this.disconnectedByWifi = false;
@@ -3667,27 +3675,31 @@ WifiWorker.prototype = {
     debug("handleWifiTetheringEnabled![" + enabled + "]");
     if (enabled) {
       this.queueRequest({command: "setWifiEnabled", value: false}, function(data) {
+        debug("handleWifiTetheringEnabled:setWifiEnabled-false[" + WifiManager.state + "]");
         if (WifiManager.isWifiEnabled(WifiManager.state)) {
           this.disconnectedByWifiTethering = true;
-          debug("call this._setWifiEnabled[false]");
+          debug("handleWifiTetheringEnabled: call this._setWifiEnabled---false");
           this._setWifiEnabled(false, this._setWifiEnabledCallback.bind(this));
         } else {
+          debug("handleWifiTetheringEnabled:[setWifiEnabled, false] call this.requestDone[" + WifiManager.state + "]");
           this.requestDone();
         }
       }.bind(this));
     }
 
     this.queueRequest({command: "setWifiApEnabled", value: enabled}, function(data) {
-      debug("call this.setWifiApEnabled[" + enabled + "]");
+      debug("handleWifiTetheringEnabled: call this.setWifiApEnabled[" + enabled + "]");
       this.setWifiApEnabled(enabled, this.requestDone.bind(this));
     }.bind(this));
 
     if (!enabled) {
       this.queueRequest({command: "setWifiEnabled", value: true}, function(data) {
+        debug("WifiManager.state[" + WifiManager.state + "]disconnectedByWifiTethering[" + this.disconnectedByWifiTethering + "]");
         if (this.disconnectedByWifiTethering) {
-          debug("call this._setWifiEnabled[true]");
+          debug("handleWifiTetheringEnabled:call this._setWifiEnabled---true");
           this._setWifiEnabled(true, this._setWifiEnabledCallback.bind(this));
         } else {
+          debug("handleWifiTetheringEnabled:[setWifiEnabled, true] call this.requestDone![" + this.disconnectedByWifiTethering + "]");
           this.requestDone();
         }
         this.disconnectedByWifiTethering = false;
@@ -3765,7 +3777,7 @@ WifiWorker.prototype = {
         }
 
         if (this._wifiTetheringSettingsToRead.length) {
-          debug("We haven't read completely the wifi Tethering data from settings db.");
+          debug("We haven't read completely the wifi Tethering data from settings db.[" + this._wifiTetheringSettingsToRead.length + "]");
           break;
         }
 
