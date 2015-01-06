@@ -1111,6 +1111,7 @@ var WifiManager = (function() {
     if (enabled) {
       manager.tetheringState = "INITIALIZING";
 
+      // force network can be used in AP mode.
       WifiNetworkInterface.name = manager.ifname;
       WifiNetworkInterface.state = Ci.nsINetworkInterface.NETWORK_STATE_CONNECTED;
       if (!WifiNetworkInterface.registered) {
@@ -1121,6 +1122,7 @@ var WifiManager = (function() {
       WifiNetworkInterface.prefixLengths = [];
       WifiNetworkInterface.gateways = [];
       WifiNetworkInterface.dnses = [];
+      gNetworkManager.updateNetworkInterface(WifiNetworkInterface); // update network!let it in connected!
 
       debug("manager.setWifiApEnabled:loadDriver!");
       loadDriver(function (status) {
