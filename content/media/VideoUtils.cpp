@@ -101,6 +101,11 @@ void GetEstimatedBufferedTimeRanges(mozilla::MediaResource* aStream,
                         double(endUs) / USECS_PER_S);
     }
     startOffset = aStream->GetNextCachedData(endOffset);
+
+    // should be assert?
+    if (startOffset == -1 || startOffset <= endOffset) {
+        break;
+    }
   }
   return;
 }
