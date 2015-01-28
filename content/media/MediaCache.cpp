@@ -2425,8 +2425,15 @@ nsresult MediaCacheStream::GetCachedRanges(nsTArray<MediaByteRange>& aRanges)
     // Bytes [startOffset..endOffset] are cached.
     aRanges.AppendElement(MediaByteRange(startOffset, endOffset));
     startOffset = GetNextCachedData(endOffset);
+
+    // assert?
     NS_ASSERTION(startOffset == -1 || startOffset > endOffset,
       "Must have advanced to start of next range, or hit end of stream");
+
+    if (startOffset == -1 || startOffset <= endOffset) {
+        printf_stderr("MediaCacheStream::GetCachedRanges: maybe in dead loop? directly return?!!!!");
+        break;
+    }
   }
   return NS_OK;
 }
