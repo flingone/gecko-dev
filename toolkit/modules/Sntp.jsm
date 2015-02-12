@@ -137,7 +137,7 @@ Sntp.prototype = {
       this._retryPeriodInMS = 0;
       return;
     }
-    this._retryPeriodInMS = Math.max(1000, this._retryPeriodInMS * 2);
+    this._retryPeriodInMS = Math.min(30000, Math.max(1000, this._retryPeriodInMS * 2)); // max 30s?
 
     this._schedule(this._retryPeriodInMS);
   },
@@ -197,6 +197,11 @@ Sntp.prototype = {
           );
         }
         debug ("Data available: " + count + " bytes");
+
+        if (!this._requesting) {
+            debug("ignore this sntp response? for this may be not a valid response!");
+            return;
+        }
 
         try {
           let binaryInputStream = Cc["@mozilla.org/binaryinputstream;1"]
