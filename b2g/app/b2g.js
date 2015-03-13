@@ -52,7 +52,7 @@ pref("browser.cache.memory.capacity", 1024); // kilobytes
 pref("browser.cache.memory_limit", 2048); // 2 MB
 
 /* image cache prefs */
-pref("image.cache.size", 1048576); // bytes
+pref("image.cache.size", 33554432); // bytes. changed from 1m to 32m
 pref("image.high_quality_downscaling.enabled", false);
 pref("canvas.image.cache.limit", 20971520); // 20 MB
 
@@ -331,7 +331,7 @@ pref("media.video-queue.default-size", 3);
 pref("image.mem.decodeondraw", true);
 pref("image.mem.allow_locking_in_content_processes", false); /* don't allow image locking */
 pref("image.mem.min_discard_timeout_ms", 86400000); /* 24h, we rely on the out of memory hook */
-pref("image.mem.max_decoded_image_kb", 30000); /* 30MB seems reasonable */
+pref("image.mem.max_decoded_image_kb", 60000); /* 30MB seems reasonable */
 // 65MB seems reasonable and layout/reftests/bugs/370629-1.html requires more than 62MB
 pref("image.mem.hard_limit_decoded_image_kb", 66560);
 pref("image.onload.decode.limit", 24); /* don't decode more than 24 images eagerly */
