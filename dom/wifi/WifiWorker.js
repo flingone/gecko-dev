@@ -1174,7 +1174,10 @@ var WifiManager = (function() {
         // Driver startup on certain platforms takes longer than it takes
         // for us to return from loadDriver, so wait 2 seconds before
         // turning on Wifi tethering.
-        createWaitForDriverReadyTimer(doStartWifiTethering);
+        //createWaitForDriverReadyTimer(doStartWifiTethering);
+
+        // We directly call tethering because the driver has already been loaded when boot up. Let's monitor it.
+        doStartWifiTethering();
       });
     } else {
       cancelWifiHotspotStatusTimer();
