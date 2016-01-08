@@ -22,6 +22,7 @@
 #include "ARTSPConnection.h"
 #include "ASessionDescription.h"
 
+#define LOG_TAG "RTSPConnectionHandler"
 #include "RtspPrlog.h"
 
 #include <ctype.h>
@@ -1260,6 +1261,13 @@ struct RtspConnectionHandler : public AHandler {
             items->push_back(AString(s, start, offset - start));
             start = offset + strlen(separator);
         }
+
+        if (items->size() > 1) {
+            LOGE("String Info: %u", items->size());
+            List<AString>::iterator it = items->begin();
+            items->erase(++ it);
+            CHECK(items->size() == 1);
+        }
     }
 
     bool parsePlayResponse(const sp<ARTSPResponse> &response) {
@@ -1320,6 +1328,7 @@ struct RtspConnectionHandler : public AHandler {
                     && !(val == mTracks.editItemAt(trackIndex).mURL)) {
                 ++trackIndex;
             }
+            LOGE("trackIndex = %u mTracks.size() = %u", trackIndex, mTracks.size());
             if (trackIndex >= mTracks.size()) {
                 LOGE("No matching url");
                 return false;

@@ -234,7 +234,7 @@ void RTSPSource::performPlay(int64_t playTimeUs) {
     MOZ_ASSERT(playTimeUs < duration,
                "Should never receive an out of bounds play time!");
     if (playTimeUs >= duration) {
-        return;
+        //return;
     }
 
     LOGI("performPlay : duration=%lld playTimeUs=%lld", duration, playTimeUs);

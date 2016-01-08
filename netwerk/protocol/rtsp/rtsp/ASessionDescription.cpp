@@ -33,8 +33,38 @@ ASessionDescription::ASessionDescription()
 ASessionDescription::~ASessionDescription() {
 }
 
+void ASessionDescription::RemoveAudioTrack() {
+    //remove audio track
+
+    uint32_t aTrackIdx = 0;
+    bool isFoundAudioTrack = false;
+
+    for (uint32_t idx = 0; idx < mTracks.size(); idx ++) {
+        if (mTracks.editItemAt(idx).valueFor("Type") == "AudioTrack") {
+            aTrackIdx = idx;
+            isFoundAudioTrack = true;
+        }
+    }
+
+    if (isFoundAudioTrack) {
+        mTracks.removeAt(aTrackIdx);
+        //remove audio format
+        mFormats.removeAt(aTrackIdx);
+    } else {
+        LOGE("Remove audio track failed, do not find any audio track.");
+    }
+
+}
+
 bool ASessionDescription::setTo(const void *data, size_t size) {
     mIsValid = parse(data, size);
+
+    if (mIsValid) {
+        RemoveAudioTrack();
+    }
+
+    CHECK(mTracks.size() == 2);
+    CHECK(mFormats.size() == 2);
 
     if (!mIsValid) {
         mTracks.clear();
@@ -50,6 +80,8 @@ bool ASessionDescription::parse(const void *data, size_t size) {
 
     mTracks.push(Attribs());
     mFormats.push(AString("[root]"));
+
+    mTracks.editItemAt(mTracks.size() - 1).add("Type", "SDPTrack");
 
     AString desc((const char *)data, size);
 
@@ -127,11 +159,21 @@ bool ASessionDescription::parse(const void *data, size_t size) {
 
             case 'm':
             {
-                LOGV("new section '%s'",
-                     AString(line, 2, line.size() - 2).c_str());
+                const char *section = line.c_str();
+                LOGV("new section '%s'", section);
 
                 mTracks.push(Attribs());
                 mFormats.push(AString(line, 2, line.size() - 2));
+
+                if (! strncmp(section, "m=audio", 7)) {
+                    LOGE("Set audio flag.");
+                    mTracks.editItemAt(mTracks.size() - 1).add("Type", "AudioTrack");
+                } else if (! strncmp(section, "m=video", 7)) {
+                    LOGE("Set video flag.");
+                    mTracks.editItemAt(mTracks.size() - 1).add("Type", "VideoTrack");
+                } else {
+                    LOGE("Section(%s) is not a media track.", section);
+                }
                 break;
             }
 
@@ -165,6 +207,7 @@ bool ASessionDescription::isValid() const {
 }
 
 size_t ASessionDescription::countTracks() const {
+    LOGE("---------countTracks: %u-------------", mTracks.size());
     return mTracks.size();
 }
 
@@ -281,9 +324,9 @@ bool ASessionDescription::getDurationUs(int64_t *durationUs) const {
         return false;
     }
 
-    *durationUs = (int64_t)((to - from) * 1E6);
+    //*durationUs = (int64_t)((to - from) * 1E6);
 
-    return true;
+    return false;
 }
 
 // static

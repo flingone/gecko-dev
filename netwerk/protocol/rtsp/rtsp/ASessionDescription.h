@@ -75,6 +75,7 @@ private:
     Vector<AString> mFormats;
 
     bool parse(const void *data, size_t size);
+    void RemoveAudioTrack();
 
     DISALLOW_EVIL_CONSTRUCTORS(ASessionDescription);
 };

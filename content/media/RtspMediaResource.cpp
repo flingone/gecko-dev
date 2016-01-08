@@ -639,9 +639,11 @@ RtspMediaResource::OnMediaDataAvailable(uint8_t aTrackIdx,
   uint32_t frameType;
   meta->GetTimeStamp(&time);
   meta->GetFrameType(&frameType);
+#if 0
   if (mRealTime) {
     time = 0;
   }
+#endif
   mTrackBuffer[aTrackIdx]->WriteBuffer(data.BeginReading(), length, time,
                                        frameType);
   return NS_OK;
