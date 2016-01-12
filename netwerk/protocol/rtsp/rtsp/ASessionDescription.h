@@ -26,6 +26,12 @@
 #include <utils/RefBase.h>
 #include <utils/Vector.h>
 
+
+// Actually, 1 + number of tracks, as index 0 is reserved for the
+// session description root-level attributes. So we assume that the
+// most track size do not great than three(<=3)...
+#define TRACK_MAX_SIZE 3
+
 namespace android {
 
 struct MOZ_EXPORT AString;
@@ -50,6 +56,7 @@ struct ASessionDescription : public RefBase {
             int32_t *width, int32_t *height) const;
 
     bool getDurationUs(int64_t *durationUs) const;
+    uint32_t getRemovedTrackIndex();
 
     static bool ParseFormatDesc(
             const char *desc, int32_t *timescale, int32_t *numChannels);
@@ -71,6 +78,8 @@ private:
     typedef KeyedVector<AString,AString> Attribs;
 
     bool mIsValid;
+
+    uint32_t mRemovedTrackIndex;
     Vector<Attribs> mTracks;
     Vector<AString> mFormats;
 

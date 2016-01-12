@@ -27,33 +27,38 @@
 namespace android {
 
 ASessionDescription::ASessionDescription()
-    : mIsValid(false) {
+    : mIsValid(false),
+    mRemovedTrackIndex(TRACK_MAX_SIZE){
 }
 
 ASessionDescription::~ASessionDescription() {
 }
 
+uint32_t ASessionDescription::getRemovedTrackIndex(void)
+{
+    return mRemovedTrackIndex;
+}
+
 void ASessionDescription::RemoveAudioTrack() {
     //remove audio track
 
-    uint32_t aTrackIdx = 0;
     bool isFoundAudioTrack = false;
 
     for (uint32_t idx = 0; idx < mTracks.size(); idx ++) {
         if (mTracks.editItemAt(idx).valueFor("Type") == "AudioTrack") {
-            aTrackIdx = idx;
+            mRemovedTrackIndex = idx;
             isFoundAudioTrack = true;
+            break;
         }
     }
 
     if (isFoundAudioTrack) {
-        mTracks.removeAt(aTrackIdx);
+        mTracks.removeAt(mRemovedTrackIndex);
         //remove audio format
-        mFormats.removeAt(aTrackIdx);
+        mFormats.removeAt(mRemovedTrackIndex);
     } else {
         LOGE("Remove audio track failed, do not find any audio track.");
     }
-
 }
 
 bool ASessionDescription::setTo(const void *data, size_t size) {

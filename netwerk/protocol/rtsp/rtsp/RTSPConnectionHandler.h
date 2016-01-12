@@ -43,6 +43,8 @@
 #include "prio.h"
 #include "prnetdb.h"
 
+#define MAX_TRACK_SIZE 3
+
 extern PRLogModuleInfo* gRtspLog;
 
 // If no access units are received within 2 secs, assume that the rtp
@@ -1262,12 +1264,6 @@ struct RtspConnectionHandler : public AHandler {
             start = offset + strlen(separator);
         }
 
-        if (items->size() > 1) {
-            LOGE("String Info: %u", items->size());
-            List<AString>::iterator it = items->begin();
-            items->erase(++ it);
-            CHECK(items->size() == 1);
-        }
     }
 
     bool parsePlayResponse(const sp<ARTSPResponse> &response) {
@@ -1311,6 +1307,25 @@ struct RtspConnectionHandler : public AHandler {
         AString rtpInfo = response->mHeaders.valueAt(i);
         List<AString> streamInfos;
         SplitString(rtpInfo, ",", &streamInfos);
+
+        if (streamInfos.size() > 1) {
+            uint32_t removedTrackIndex = mSessionDesc->getRemovedTrackIndex();
+            if (removedTrackIndex != MAX_TRACK_SIZE) {
+
+                removedTrackIndex --;
+
+                LOGE("Need removed stream Info: %u", removedTrackIndex);
+
+                List<AString>::iterator it = streamInfos.begin();
+
+                for (uint32_t idx = 0; idx < removedTrackIndex; i ++) {
+                    it ++;
+                }
+
+                streamInfos.erase(it);
+                CHECK(streamInfos.size() == 1);
+            }
+        }
 
         int n = 1;
         for (List<AString>::iterator it = streamInfos.begin();
