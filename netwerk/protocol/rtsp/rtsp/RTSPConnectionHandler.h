@@ -1318,7 +1318,7 @@ struct RtspConnectionHandler : public AHandler {
 
                 List<AString>::iterator it = streamInfos.begin();
 
-                for (uint32_t idx = 0; idx < removedTrackIndex; i ++) {
+                for (uint32_t idx = 0; idx < removedTrackIndex; idx ++) {
                     it ++;
                 }
 
